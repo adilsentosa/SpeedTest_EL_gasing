@@ -10,7 +10,7 @@ import os
 
 # Aktifkan logging untuk debugging dengan encoding UTF-8
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
@@ -47,8 +47,7 @@ async def speedtest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         ip_public = st.results.server["host"]
         ip_local = get_local_ip()
 
-        logger.info("Speedtest berhasil: Download %.2f Mbps, Upload %.2f Mbps, Ping %.2f ms", download_speed, upload_speed, ping)
-
+        # Menyusun hasil ke dalam string dengan encoding yang tepat
         result = f"""
         📊 Hasil Speedtest 📊
         - Lokasi: {building_name}
@@ -57,7 +56,7 @@ async def speedtest_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
         - Kecepatan Download: {download_speed:.2f} Mbps
         - Kecepatan Upload: {upload_speed:.2f} Mbps
         - Ping: {ping:.2f} ms
-        """
+        """.encode('utf-8', errors='replace').decode('utf-8')
 
         await update.message.reply_text(result)
 
