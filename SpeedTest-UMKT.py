@@ -1,5 +1,6 @@
 import logging
 import csv
+import matplotlib.pyplot as plt
 from datetime import datetime
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
@@ -96,9 +97,46 @@ async def rekapcsv_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     with open("rekap_filtered.csv", "rb") as file:
         await update.message.reply_document(document=file, filename="rekap_filtered.csv")
 
+# Fungsi untuk membuat dan mengirim grafik
+async def grafik_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if not os.path.exists("rekap_speedtest.csv"):
+        await update.message.reply_text("Belum ada data rekap speedtest yang tersimpan.")
+        return
+
+    # Membaca data dari CSV
+    dates, download_speeds, upload_speeds, pings = [], [], [], []
+    with open("rekap_speedtest.csv", mode="r") as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip header
+        for row in reader:
+            dates.append(datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S"))
+            download_speeds.append(float(row[4]))
+            upload_speeds.append(float(row[5]))
+            pings.append(float(row[6]))
+
+    # Membuat grafik
+    plt.figure(figsize=(10, 6))
+    plt.plot(dates, download_speeds, label='Download (Mbps)', color='b')
+    plt.plot(dates, upload_speeds, label='Upload (Mbps)', color='g')
+    plt.plot(dates, pings, label='Ping (ms)', color='r')
+    plt.xlabel('Tanggal')
+    plt.ylabel('Kecepatan')
+    plt.title('Rekap Speedtest')
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+
+    # Simpan grafik
+    plt.savefig("rekap_speedtest.png")
+    plt.close()
+
+    # Kirim grafik ke pengguna
+    with open("rekap_speedtest.png", "rb") as file:
+        await update.message.reply_photo(photo=file, caption="Grafik rekap speedtest")
+
 # Fungsi untuk memulai bot
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Halo! Kirim /speedtest <Nama_Gedung> untuk menjalankan tes kecepatan internet atau /rekapcsv <Nama_Gedung> untuk mendapatkan file rekap CSV berdasarkan gedung.')
+    await update.message.reply_text('Halo! Kirim /speedtest <Nama_Gedung> untuk menjalankan tes kecepatan internet, /rekapcsv <Nama_Gedung> untuk mendapatkan file rekap CSV berdasarkan gedung, atau /grafik untuk melihat grafik hasil speedtest.')
 
 # Fungsi utama untuk menjalankan bot
 def main() -> None:
@@ -107,6 +145,7 @@ def main() -> None:
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("speedtest", speedtest_command))
     app.add_handler(CommandHandler("rekapcsv", rekapcsv_command))
+    app.add_handler(CommandHandler("grafik", grafik_command))
 
     app.run_polling()
 
