@@ -170,8 +170,8 @@ def main() -> None:
     app.add_handler(CommandHandler("rekapcsv", rekapcsv_command))
     app.add_handler(CommandHandler("grafik", grafik_command))
 
-    logger.info("Bot Telegram mulai dijalankan")
     app.run_polling()
+    logger.info("Bot berjalan dengan polling")
 
 if __name__ == '__main__':
     main()
