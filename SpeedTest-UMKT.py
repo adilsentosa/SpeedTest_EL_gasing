@@ -97,7 +97,7 @@ async def rekapcsv_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     with open("rekap_filtered.csv", "rb") as file:
         await update.message.reply_document(document=file, filename="rekap_filtered.csv")
 
-# Fungsi untuk membuat dan mengirim grafik
+# Fungsi untuk membuat dan mengirim grafik batang
 async def grafik_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if not os.path.exists("rekap_speedtest.csv"):
         await update.message.reply_text("Belum ada data rekap speedtest yang tersimpan.")
@@ -109,16 +109,22 @@ async def grafik_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         reader = csv.reader(file)
         next(reader)  # Skip header
         for row in reader:
-            dates.append(datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S"))
+            dates.append(datetime.strptime(row[0], "%Y-%m-%d %H:%M:%S").strftime('%Y-%m-%d %H:%M'))
             download_speeds.append(float(row[4]))
             upload_speeds.append(float(row[5]))
             pings.append(float(row[6]))
 
-    # Membuat grafik
-    plt.figure(figsize=(10, 6))
-    plt.plot(dates, download_speeds, label='Download (Mbps)', color='b')
-    plt.plot(dates, upload_speeds, label='Upload (Mbps)', color='g')
-    plt.plot(dates, pings, label='Ping (ms)', color='r')
+    # Membuat grafik batang
+    bar_width = 0.25
+    x = range(len(dates))
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(x, download_speeds, width=bar_width, label='Download (Mbps)', color='b', align='center')
+    plt.bar([i + bar_width for i in x], upload_speeds, width=bar_width, label='Upload (Mbps)', color='g', align='center')
+    plt.bar([i + bar_width * 2 for i in x], pings, width=bar_width, label='Ping (ms)', color='r', align='center')
+
+    # Menyelaraskan sumbu x dengan label tanggal
+    plt.xticks([i + bar_width for i in x], dates, rotation=45, ha='right')
     plt.xlabel('Tanggal')
     plt.ylabel('Kecepatan')
     plt.title('Rekap Speedtest')
