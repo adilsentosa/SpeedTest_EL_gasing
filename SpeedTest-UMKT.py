@@ -11,8 +11,7 @@ import os
 # Aktifkan logging untuk debugging dengan encoding UTF-8
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', 
-    level=logging.INFO,
-    encoding='utf-8'
+    level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
